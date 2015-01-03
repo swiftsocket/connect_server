@@ -17,39 +17,7 @@ class ClientConn{
         self.tcpclient=client
         self.server=server
     }
-    func readInt32()->Int32?{
-        var bytes=self.tcpclient.read(4)
-        if let b:[UInt8]=bytes{
-            if b.count==4{
-                var data:NSData=NSData(bytes: b, length: b.count)
-                var value:Int32=0
-                data.getBytes(&value, length: 4)
-                return value
-            }
-        }
-        return nil
-    }
-    func readInt8()->Int8?{
-        var bytes=self.tcpclient.read(1)
-        if let b:[UInt8]=bytes{
-            if b.count==1{
-                var data:NSData=NSData(bytes: b, length: b.count)
-                var value:Int8=0
-                data.getBytes(&value, length: 1)
-                return value
-            }
-        }
-        return nil
-    }
-    func readString(len:Int32)->String?{
-        var bytes=self.tcpclient.read(Int(len))
-        if let b:[UInt8]=bytes{
-            if b.count==Int(len){
-                return String(bytes: b, encoding: NSUTF8StringEncoding)
-            }
-        }
-        return nil
-    }
+    
     //收到一条完整的消息
     func postmessage(msg:Message){
         println("["+self.tcpclient.addr+"]recive:"+msg.content)
@@ -57,42 +25,14 @@ class ClientConn{
     //发送消息给客户端
     func sendmessage(msg:Message){
         println("["+self.tcpclient.addr+"]send:"+msg.content)
-        var datatosend=NSMutableData()
-        var len:Int32=msg.header.len
-        var control:Int8=msg.header.control.rawValue
-        datatosend.appendBytes(&len, length: 4)
-        datatosend.appendBytes(&control, length: 1)
-        datatosend.appendData(msg.content.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: true)!)
-        self.tcpclient.send(data: datatosend)
+        self.tcpclient.sendMessage(msg)
     }
     //客户端连接消息循环
     func messageloop(){
         while self.alive==true{
-            //read message len
-            var len:Int32=0
-            if var l:Int32=self.readInt32(){
-                len=l
-            }else{
-                self.alive=false
-                break
-            }
-            //read message control
-            var msgcontrol:MessageControl
-            if var c:Int8=self.readInt8(){
-                if let mc:MessageControl=MessageControl(rawValue: c){
-                    msgcontrol=mc
-                }else{
-                    self.alive=false
-                    break
-                }
-            }else{
-                self.alive=false
-                break
-            }
-            //read message content
-            var content:String
-            if let content:String=self.readString(len-5){
-                self.postmessage(Message(control: msgcontrol, content: content))
+            //read message
+            if let msg:Message=self.tcpclient.readMessage(){
+                self.postmessage(msg)
             }else{
                 self.alive=false
                 break
@@ -112,7 +52,7 @@ public class ConnectServer {
     //客户端消息处理队列
     private var clientqueue=dispatch_queue_create("queue.client", DISPATCH_QUEUE_CONCURRENT)
     //消息发送队列
-    private var msgqueue=dispatch_queue_create("queue.msg", DISPATCH_QUEUE_CONCURRENT)
+    private var msgqueue=dispatch_queue_create("queue.msg", DISPATCH_QUEUE_SERIAL)
     //服务器是否在运行
     var running:Bool!
     //客户端列表
