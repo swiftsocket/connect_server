@@ -23,17 +23,22 @@ struct MessageHeader{
     }
 }
 //消息结构
-struct Message {
+public struct Message {
     var header:MessageHeader
     var content:String
-    init(header:MessageHeader,content:String){
+    private init(header:MessageHeader,content:String){
         self.header=header
         self.content=content
     }
-    init(control:MessageControl,content:String){
+    private init(control:MessageControl,content:String){
         var len:Int32=4+1+content.lengthOfBytesUsingEncoding(NSUTF8StringEncoding)
         self.header=MessageHeader(len:len,control:control)
         self.content=content
+    }
+    init(msg:String){
+        var len:Int32=4+1+msg.lengthOfBytesUsingEncoding(NSUTF8StringEncoding)
+        self.header=MessageHeader(len:len,control:MessageControl.content)
+        self.content=msg
     }
 }
 class ClientConn{
@@ -80,11 +85,18 @@ class ClientConn{
     }
     //收到一条完整的消息
     func postmessage(msg:Message){
-        
+        println("["+self.tcpclient.addr+"]recive:"+msg.content)
     }
     //发送消息给客户端
     func sendmessage(msg:Message){
-        
+        println("["+self.tcpclient.addr+"]send:"+msg.content)
+        var datatosend=NSMutableData()
+        var len:Int32=msg.header.len
+        var control:Int8=msg.header.control.rawValue
+        datatosend.appendBytes(&len, length: 4)
+        datatosend.appendBytes(&control, length: 1)
+        datatosend.appendData(msg.content.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: true)!)
+        self.tcpclient.send(data: datatosend)
     }
     //客户端连接消息循环
     func messageloop(){
@@ -132,6 +144,8 @@ public class ConnectServer {
     private var serverqueue=dispatch_queue_create("queue.server", DISPATCH_QUEUE_CONCURRENT)
     //客户端消息处理队列
     private var clientqueue=dispatch_queue_create("queue.client", DISPATCH_QUEUE_CONCURRENT)
+    //消息发送队列
+    private var msgqueue=dispatch_queue_create("queue.msg", DISPATCH_QUEUE_CONCURRENT)
     //服务器是否在运行
     var running:Bool!
     //客户端列表
@@ -171,6 +185,16 @@ public class ConnectServer {
             print(msg)
         }
         return false
+    }
+    public func boardcast(m:Message){
+        self.clientsLock.lock()
+        for client in self.clients{
+            dispatch_async(self.msgqueue, { () -> Void in
+                var c=client as ClientConn
+                c.sendmessage(m)
+            })
+        }
+        self.clientsLock.unlock()
     }
     //循环接收客户连接
     private func runloop(){

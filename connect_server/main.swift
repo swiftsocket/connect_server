@@ -16,7 +16,9 @@ var stdinhandle=NSFileHandle.fileHandleWithStandardInput()
 
 while true{
     var d=stdinhandle.availableData
-    println(d)
+    var str=NSString(data: d, encoding: NSUTF8StringEncoding) as String
+    str=str.stringByReplacingOccurrencesOfString("\n", withString: "", options: NSStringCompareOptions.CaseInsensitiveSearch, range: nil)
+    connserver.boardcast(Message(msg: str))
 }
 
 
