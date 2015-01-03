@@ -15,8 +15,8 @@ if connserver.run()==true{
 var stdinhandle=NSFileHandle.fileHandleWithStandardInput()
 
 while true{
-    
-    
+    var d=stdinhandle.availableData
+    println(d)
 }
 
 
