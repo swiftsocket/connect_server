@@ -38,6 +38,7 @@ class ClientConn{
                 break
             }
         }
+        self.tcpclient.close()
         self.server.killClient(self)
     }
 }
@@ -80,6 +81,10 @@ public class ConnectServer {
         (self.clients as NSMutableArray).removeObject(client)
         self.clientsLock.unlock()
     }
+    public func stop(){
+        self.running=false
+        self.tcpserver.close()
+    }
     public func run()->Bool{
         var (success,msg)=self.tcpserver.listen()
         if success==true{
@@ -111,7 +116,7 @@ public class ConnectServer {
                 //加入客户连接
                 self.joinClient(ClientConn(client: client, server:self))
             }else{
-                print("accept error")
+                print("accept error\n")
             }
         }
     }

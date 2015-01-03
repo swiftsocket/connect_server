@@ -18,7 +18,13 @@ while true{
     var d=stdinhandle.availableData
     var str=NSString(data: d, encoding: NSUTF8StringEncoding) as String
     str=str.stringByReplacingOccurrencesOfString("\n", withString: "", options: NSStringCompareOptions.CaseInsensitiveSearch, range: nil)
-    connserver.boardcast(Message(msg: str))
+    if str.hasPrefix("quit"){
+        connserver.stop()
+        break
+    }else{
+        connserver.boardcast(Message(msg: str))
+    }
+    
 }
 
 
