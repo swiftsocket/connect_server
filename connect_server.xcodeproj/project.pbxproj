@@ -14,6 +14,7 @@
 		04D405211A5777A4005D547D /* ytcpsocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D4051C1A5777A4005D547D /* ytcpsocket.swift */; };
 		04D405221A5777A4005D547D /* yudpsocket.c in Sources */ = {isa = PBXBuildFile; fileRef = 04D4051D1A5777A4005D547D /* yudpsocket.c */; };
 		04D405231A5777A4005D547D /* yudpsocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D4051E1A5777A4005D547D /* yudpsocket.swift */; };
+		D4DA1DC01A57E7E50090EE06 /* protocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4DA1DBF1A57E7E50090EE06 /* protocol.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -37,6 +38,7 @@
 		04D4051C1A5777A4005D547D /* ytcpsocket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ytcpsocket.swift; sourceTree = "<group>"; };
 		04D4051D1A5777A4005D547D /* yudpsocket.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = yudpsocket.c; sourceTree = "<group>"; };
 		04D4051E1A5777A4005D547D /* yudpsocket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = yudpsocket.swift; sourceTree = "<group>"; };
+		D4DA1DBF1A57E7E50090EE06 /* protocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = protocol.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,6 +74,7 @@
 				04D405191A5777A4005D547D /* ysocket */,
 				049DD9431A56EC310012C9F0 /* main.swift */,
 				049DD95A1A56FD220012C9F0 /* connectserver.swift */,
+				D4DA1DBF1A57E7E50090EE06 /* protocol.swift */,
 			);
 			path = connect_server;
 			sourceTree = "<group>";
@@ -147,6 +150,7 @@
 				04D4051F1A5777A4005D547D /* ysocket.swift in Sources */,
 				049DD9441A56EC310012C9F0 /* main.swift in Sources */,
 				04D405221A5777A4005D547D /* yudpsocket.c in Sources */,
+				D4DA1DC01A57E7E50090EE06 /* protocol.swift in Sources */,
 				04D405201A5777A4005D547D /* ytcpsocket.c in Sources */,
 				049DD95B1A56FD220012C9F0 /* connectserver.swift in Sources */,
 				04D405211A5777A4005D547D /* ytcpsocket.swift in Sources */,

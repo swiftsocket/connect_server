@@ -7,40 +7,7 @@
 //
 
 import Foundation
-//消息头标示
-enum MessageControl:Int8{
-    case terminal=0x01
-    case version=0x02
-    case content=0x03
-}
-//消息头结构
-struct MessageHeader{
-    var len:Int32
-    var control:MessageControl
-    init(len:Int32,control:MessageControl){
-        self.len=len
-        self.control=control
-    }
-}
-//消息结构
-public struct Message {
-    var header:MessageHeader
-    var content:String
-    private init(header:MessageHeader,content:String){
-        self.header=header
-        self.content=content
-    }
-    private init(control:MessageControl,content:String){
-        var len:Int32=4+1+content.lengthOfBytesUsingEncoding(NSUTF8StringEncoding)
-        self.header=MessageHeader(len:len,control:control)
-        self.content=content
-    }
-    init(msg:String){
-        var len:Int32=4+1+msg.lengthOfBytesUsingEncoding(NSUTF8StringEncoding)
-        self.header=MessageHeader(len:len,control:MessageControl.content)
-        self.content=msg
-    }
-}
+
 class ClientConn{
     private var server:ConnectServer!
     private var tcpclient:TCPClient!
