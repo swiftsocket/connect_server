@@ -8,11 +8,15 @@
 
 import Foundation
 
-var connserver=ConnectServer(addr: "127.0.0.1", port: 8080)
-connserver.run()
+var connserver=ConnectServer(identifier:"ixy.io.connector1",addr: "127.0.0.1", port: 8080)
+if connserver.run()==true{
+    println("server run ok")
+}
+var stdinhandle=NSFileHandle.fileHandleWithStandardInput()
 
-while connserver.running!==true{
-    NSRunLoop.currentRunLoop().runUntilDate(NSDate.distantFuture() as NSDate)
+while true{
+    
+    
 }
 
 

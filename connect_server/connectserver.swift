@@ -40,20 +40,83 @@ class ClientConn{
     private var server:ConnectServer!
     private var tcpclient:TCPClient!
     private var alive:Bool=true
+    private var version:String?
     init(client:TCPClient,server:ConnectServer){
         self.tcpclient=client
         self.server=server
     }
+    func readInt32()->Int32?{
+        var bytes=self.tcpclient.read(4)
+        if let b:[UInt8]=bytes{
+            if b.count==4{
+                var data:NSData=NSData(bytes: b, length: b.count)
+                var value:Int32=0
+                data.getBytes(&value, length: 4)
+                return value
+            }
+        }
+        return nil
+    }
+    func readInt8()->Int8?{
+        var bytes=self.tcpclient.read(1)
+        if let b:[UInt8]=bytes{
+            if b.count==1{
+                var data:NSData=NSData(bytes: b, length: b.count)
+                var value:Int8=0
+                data.getBytes(&value, length: 1)
+                return value
+            }
+        }
+        return nil
+    }
+    func readString(len:Int32)->String?{
+        var bytes=self.tcpclient.read(Int(len))
+        if let b:[UInt8]=bytes{
+            if b.count==Int(len){
+                return String(bytes: b, encoding: NSUTF8StringEncoding)
+            }
+        }
+        return nil
+    }
+    //收到一条完整的消息
+    func postmessage(msg:Message){
+        
+    }
+    //发送消息给客户端
+    func sendmessage(msg:Message){
+        
+    }
     //客户端连接消息循环
     func messageloop(){
         while self.alive==true{
-            var data = self.tcpclient.read(1024)
-            if let d:[UInt8]=data{
-                if let str=String(bytes: d, encoding: NSUTF8StringEncoding){
-                    println("read from"+self.tcpclient.addr+" message:"+str)
+            //read message len
+            var len:Int32=0
+            if var l:Int32=self.readInt32(){
+                len=l
+            }else{
+                self.alive=false
+                break
+            }
+            //read message control
+            var msgcontrol:MessageControl
+            if var c:Int8=self.readInt8(){
+                if let mc:MessageControl=MessageControl(rawValue: c){
+                    msgcontrol=mc
+                }else{
+                    self.alive=false
+                    break
                 }
             }else{
                 self.alive=false
+                break
+            }
+            //read message content
+            var content:String
+            if let content:String=self.readString(len-5){
+                self.postmessage(Message(control: msgcontrol, content: content))
+            }else{
+                self.alive=false
+                break
             }
         }
         self.server.killClient(self)
@@ -61,6 +124,8 @@ class ClientConn{
 }
 
 public class ConnectServer {
+    // server identifier
+    public var identifier:String!
     //tcp 链接
     private var tcpserver:TCPServer!
     //接受客户端连接的队列
@@ -73,8 +138,9 @@ public class ConnectServer {
     var clients:NSMutableArray=NSMutableArray()
     //客户端列表锁
     var clientsLock=NSLock()
-    init(addr:String,port:Int){
+    init(identifier:String,addr:String,port:Int){
         self.tcpserver=TCPServer(addr: addr, port: port)
+        self.identifier=identifier
     }
     //客户端接入
     private func joinClient(client:ClientConn){
@@ -93,16 +159,18 @@ public class ConnectServer {
         (self.clients as NSMutableArray).removeObject(client)
         self.clientsLock.unlock()
     }
-    public func run(){
+    public func run()->Bool{
         var (success,msg)=self.tcpserver.listen()
         if success==true{
             self.running=true
             dispatch_async(self.serverqueue, { () -> Void in
                 self.runloop()
             })
+            return true
         }else{
             print(msg)
         }
+        return false
     }
     //循环接收客户连接
     private func runloop(){
